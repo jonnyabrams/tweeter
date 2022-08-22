@@ -17,7 +17,7 @@ const Home: NextPage = () => {
 
         <Feed />
 
-        {/* Widgets */}
+        <Widgets />
       </main>
     </div>
   )
