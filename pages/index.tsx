@@ -14,8 +14,10 @@ const Home: NextPage = () => {
 
       <main>
         <Sidebar />
-        <Feed />
-        <Widgets />
+        
+        {/* Feed */}
+
+        {/* Widgets */}
       </main>
     </div>
   )
