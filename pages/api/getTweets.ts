@@ -16,11 +16,9 @@ type Data = {
   tweets: Tweet[];
 };
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   const tweets: Tweet[] = await sanityClient.fetch(feedQuery);
-  console.log(tweets);
   res.status(200).json({ tweets });
-}
+};
+
+export default handler;

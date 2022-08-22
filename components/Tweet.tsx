@@ -1,4 +1,5 @@
 import TimeAgo from "react-timeago";
+import { useEffect, useState } from "react";
 import {
   ChatAlt2Icon,
   HeartIcon,
@@ -6,13 +7,25 @@ import {
   UploadIcon,
 } from "@heroicons/react/outline";
 
-import { Tweet } from "../typings";
+import { Comment, Tweet } from "../typings";
+import { fetchComments } from "../utils/fetchComments";
 
 interface Props {
   tweet: Tweet;
 }
 
 const Tweet = ({ tweet }: Props) => {
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  const refreshComments = async () => {
+    const comments: Comment[] = await fetchComments(tweet._id);
+    setComments(comments);
+  };
+
+  useEffect(() => {
+    refreshComments();
+  }, []);
+
   const tweetIconStyles =
     "flex cursor-pointer items-center space-x-3 text-gray-400";
 
