@@ -1,4 +1,5 @@
 import { RefreshIcon } from "@heroicons/react/outline";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -14,6 +15,7 @@ interface Props {
 const Feed = ({ tweets: tweetsProp }: Props) => {
   // allows us to refresh the tweets (renaming tweets prop as tweetsProp)
   const [tweets, setTweets] = useState<Tweet[]>(tweetsProp);
+  const { data: session } = useSession();
 
   const handleRefresh = async () => {
     const refreshToast = toast.loading("Refreshing...");
@@ -32,12 +34,12 @@ const Feed = ({ tweets: tweetsProp }: Props) => {
         <h1 className="p-5 pb-0 text-xl font-bold">Home</h1>
         <RefreshIcon
           onClick={handleRefresh}
-          className="mr-5 mt-5 h-8 w-8 cursor-pointer text-twitter transition-all duration-500 ease-out hover:rotate-180 active:scale-125"
+          className="w-8 h-8 mt-5 mr-5 transition-all duration-500 ease-out cursor-pointer text-twitter hover:rotate-180 active:scale-125"
         />
       </div>
 
       <div>
-        <Tweetbox />
+        <Tweetbox session={session} />
       </div>
 
       <div>
