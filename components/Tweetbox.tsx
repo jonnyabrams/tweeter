@@ -45,7 +45,7 @@ const Tweetbox = ({ session }: Props) => {
             </div>
 
             <button
-              disabled={!input}
+              disabled={!input || !session}
               className="px-5 py-2 font-bold text-white rounded-full bg-twitter disabled:opacity-40"
             >
               Tweet
