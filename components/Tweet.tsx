@@ -66,7 +66,7 @@ const Tweet = ({ tweet }: Props) => {
       <div className="mt-5 flex justify-between">
         <div className={tweetIconStyles}>
           <ChatAlt2Icon className="h-5 w-5" />
-          <p>5</p>
+          <p>{comments.length}</p>
         </div>
 
         <div className={tweetIconStyles}>
