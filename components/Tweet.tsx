@@ -1,14 +1,16 @@
 import TimeAgo from "react-timeago";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ChatAlt2Icon,
   HeartIcon,
   SwitchHorizontalIcon,
   UploadIcon,
 } from "@heroicons/react/outline";
+import toast from "react-hot-toast";
 
-import { Comment, Tweet } from "../typings";
+import { Comment, CommentBody, Tweet } from "../typings";
 import { fetchComments } from "../utils/fetchComments";
+import { useSession } from "next-auth/react";
 
 interface Props {
   tweet: Tweet;
@@ -16,6 +18,9 @@ interface Props {
 
 const Tweet = ({ tweet }: Props) => {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [commentBoxVisible, setCommentBoxVisible] = useState<boolean>(false);
+  const [input, setInput] = useState<string>("");
+  const { data: session } = useSession();
 
   const refreshComments = async () => {
     const comments: Comment[] = await fetchComments(tweet._id);
@@ -26,14 +31,40 @@ const Tweet = ({ tweet }: Props) => {
     refreshComments();
   }, []);
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const commentToast = toast.loading("Posting comment...");
+
+    const comment: CommentBody = {
+      comment: input,
+      tweetId: tweet._id,
+      username: session?.user?.name || "Unknown User",
+      profileImg: session?.user?.image || "/image/default.jpeg",
+    };
+
+    const result = await fetch(`/api/addComment`, {
+      body: JSON.stringify(comment),
+      method: "POST",
+    });
+
+    toast.success("Comment posted", {
+      id: commentToast,
+    });
+
+    setInput("");
+    setCommentBoxVisible(false);
+    refreshComments();
+  };
+
   const tweetIconStyles =
     "flex cursor-pointer items-center space-x-3 text-gray-400";
 
   return (
-    <div className="flex flex-col space-x-3 border-y p-5 border-gray-100">
+    <div className="flex flex-col p-5 space-x-3 border-gray-100 border-y">
       <div className="flex space-x-3">
         <img
-          className="h-10 w-10 rounded-full object-cover"
+          className="object-cover w-10 h-10 rounded-full"
           src={tweet.profileImg}
           alt=""
         />
@@ -57,39 +88,61 @@ const Tweet = ({ tweet }: Props) => {
             <img
               src={tweet.image}
               alt=""
-              className="m-5 ml-0 mb-1 max-h-60 rounded-lg object-cover shadow-sm"
+              className="object-cover m-5 mb-1 ml-0 rounded-lg shadow-sm max-h-60"
             />
           )}
         </div>
       </div>
 
-      <div className="mt-5 flex justify-between">
-        <div className={tweetIconStyles}>
-          <ChatAlt2Icon className="h-5 w-5" />
+      <div className="flex justify-between mt-5">
+        <div
+          onClick={() => session && setCommentBoxVisible(!commentBoxVisible)}
+          className={tweetIconStyles}
+        >
+          <ChatAlt2Icon className="w-5 h-5" />
           <p>{comments.length}</p>
         </div>
 
         <div className={tweetIconStyles}>
-          <SwitchHorizontalIcon className="h-5 w-5" />
+          <SwitchHorizontalIcon className="w-5 h-5" />
         </div>
 
         <div className={tweetIconStyles}>
-          <HeartIcon className="h-5 w-5" />
+          <HeartIcon className="w-5 h-5" />
         </div>
 
         <div className={tweetIconStyles}>
-          <UploadIcon className="h-5 w-5" />
+          <UploadIcon className="w-5 h-5" />
         </div>
       </div>
 
+      {commentBoxVisible && (
+        <form onSubmit={handleSubmit} className="flex mt-3 space-x-3">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="flex-1 p-2 bg-gray-100 rounded-lg outline-none"
+            type="text"
+            placeholder="Write a comment..."
+          />
+          <button
+            disabled={!input}
+            type="submit"
+            className="text-twitter disabled:text-gray-200"
+          >
+            Post
+          </button>
+        </form>
+      )}
+
       {comments?.length > 0 && (
-        <div className="my-2 mt-5 max-h-44 space-y-5 overflow-y-scroll border-t border-gray-100 p-5">
+        <div className="p-5 my-2 mt-5 space-y-5 overflow-y-scroll border-t border-gray-100 max-h-44">
           {comments.map((comment) => (
             <div key={comment._id} className="relative flex space-x-2">
-              <hr className="absolute left-5 top-10 h-8 border-x border-twitter-30" />
+              <hr className="absolute h-8 left-5 top-10 border-x border-twitter-30" />
               <img
                 src={comment.profileImg}
-                className="mt-2 h-7 w-7 object-cover rounded-full"
+                className="object-cover mt-2 rounded-full h-7 w-7"
                 alt=""
               />
               <div>
