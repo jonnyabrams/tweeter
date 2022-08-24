@@ -5,27 +5,63 @@ import {
   PhotographIcon,
   SearchCircleIcon,
 } from "@heroicons/react/outline";
-import { useRef, useState } from "react";
+import { Dispatch, MouseEvent, SetStateAction, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { Tweet, TweetBody } from "../typings";
+import { fetchTweets } from "../utils/fetchTweets";
 
 interface Props {
   session: any;
+  setTweets: Dispatch<SetStateAction<Tweet[]>>;
 }
 
-const Tweetbox = ({ session }: Props) => {
+const Tweetbox = ({ session, setTweets }: Props) => {
   const [input, setInput] = useState<string>("");
   const [image, setImage] = useState<string>("");
   const [imageUrlBoxOpen, setImageUrlBoxOpen] = useState<boolean>(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const addImageToTweet = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
+  const addImageToTweet = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     if (!imageInputRef.current?.value) return;
 
     setImage(imageInputRef.current?.value);
     imageInputRef.current.value = "";
+    setImageUrlBoxOpen(false);
+  };
+
+  const postTweet = async () => {
+    const tweetInfo: TweetBody = {
+      text: input,
+      username: session?.user?.name || "Unknown User",
+      profileImg: session?.user?.image || "/image/default.jpeg",
+      image: image,
+    };
+
+    const result = await fetch(`/api/addTweet`, {
+      body: JSON.stringify(tweetInfo),
+      method: "POST",
+    });
+
+    const json = await result.json();
+
+    // update tweets without using Redux/Context API
+    const newTweets = await fetchTweets();
+    setTweets(newTweets);
+
+    toast("Tweet posted");
+
+    return json;
+  };
+
+  const handleSubmit = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    postTweet();
+
+    setInput("");
+    setImage("");
     setImageUrlBoxOpen(false);
   };
 
@@ -62,6 +98,7 @@ const Tweetbox = ({ session }: Props) => {
             </div>
 
             <button
+              onClick={handleSubmit}
               disabled={!input || !session}
               className="px-5 py-2 font-bold text-white rounded-full bg-twitter disabled:opacity-40"
             >

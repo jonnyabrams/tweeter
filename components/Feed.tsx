@@ -39,7 +39,7 @@ const Feed = ({ tweets: tweetsProp }: Props) => {
       </div>
 
       <div>
-        <Tweetbox session={session} />
+        <Tweetbox session={session} setTweets={setTweets} />
       </div>
 
       <div>
